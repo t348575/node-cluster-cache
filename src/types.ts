@@ -1,62 +1,67 @@
-import * as stream from "stream";
+import * as stream from 'stream';
+
 export interface ConstructOptions {
     appName: string;
 }
-export enum ErrorsEnum {
+
+export enum ErrorEnum {
     invalidMode,
     improperKey,
     unknownError,
     noSuchKey
 }
-export type Errors = {
+
+export type ErrorTypes = {
     error: string;
     errNo: number;
     message?: Message;
     errorString?: string;
 }
+export type dataType = string | number | object | Buffer | undefined;
+export type streamType = stream.Readable | stream.Duplex | stream.Writable;
 export type MessageReply = {
-    id: bigint;
+    id: number;
     name: string;
-    op: 'error';
-    error: Errors;
+    op: 'set';
+    status: true;
 } | {
-    id: bigint;
+    id: number;
     name: string;
-    op: 'setR';
-    status: boolean;
+    op: 'set';
+    status: false;
+    error: ErrorTypes
 } | {
-    id: bigint;
+    id: number;
     name: string;
-    op: 'getR';
-    key: string;
+    op: 'get';
     mode: 'equ' | undefined;
     status: true;
-    data: string | Buffer | number | object;
+    data: dataType;
 } | {
-    id: bigint;
+    id: number;
     name: string;
-    op: 'getR';
-    key: string;
+    op: 'get';
     mode: 'equ' | undefined;
     status: false;
-    reason: Errors;
+    error: ErrorTypes;
 };
+
 export type Message = {
-    id: bigint;
+    id: number;
     name: string;
     op: 'set';
     key: string;
     mode: 'equ' | undefined;
-    data: string | Buffer | number | object;
+    data: dataType;
 } | {
-    id: bigint;
+    id: number;
     name: string;
     op: 'set';
     key: string;
     mode: 'stream';
-    data: stream.Readable | stream.Duplex | stream.Writable;
+    data: streamType;
 } | {
-    id: bigint;
+    id: number;
     name: string;
     op: 'get';
     key: string;
