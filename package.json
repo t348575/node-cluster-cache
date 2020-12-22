@@ -1,0 +1,21 @@
+{
+  "name": "node-cluster-cache",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon test.js -e .js"
+  },
+  "keywords": [],
+  "author": "Joseph Subash Kanichai <kjosephsubash@gmail.com> (https://github.com/t348575)",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^14.14.14",
+    "@types/node-ipc": "^9.1.3",
+    "nodemon": "^2.0.6",
+    "typescript": "^4.1.3"
+  },
+  "dependencies": {
+    "node-ipc": "^9.1.3"
+  }
+}
