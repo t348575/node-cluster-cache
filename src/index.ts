@@ -1,12 +1,12 @@
 import * as ipc from 'node-ipc';
 import {isMaster} from 'cluster';
-import {ConstructOptions, ErrorTypes, ErrorEnum, Message, MessageReply, dataType, streamType} from './types';
+import {ConstructOptions, Error, ErrorEnum, Message, MessageReply, dataType, streamType, errorType} from './types';
 import {Socket} from 'net';
 import * as stream from 'stream';
 import {InternalEvents} from './internal-events';
 export class NodeClusterCache {
+
     private dataMaps: Map<string, any>[] = [];
-    private replyAwaitMap: Map<number, boolean> = new Map<number, boolean>();
     private id: number = 0;
     private internalEvents: InternalEvents = new InternalEvents();
     private readonly name = process.env.node_cluster_cache_name;
@@ -22,6 +22,7 @@ export class NodeClusterCache {
             this.dataMaps.push(new Map());
         }
         if (this.isMaster) {
+            this.name = 'master';
             ipc.serve(() => {
                 ipc.server.on('message', this.messageHandler.bind(this));
                 ipc.server.on('messageReply', this.messageHandler.bind(this));
@@ -77,7 +78,13 @@ export class NodeClusterCache {
                     return this.emitOrReturn('messageReply', res, socket);
                 }
                 case 'stream': {
+                    let res;
+                    switch (message.op) {
+                        case 'set': {
 
+                            break;
+                        }
+                    }
                     break;
                 }
                 default: {
@@ -114,10 +121,9 @@ export class NodeClusterCache {
     set(
         key: string,
         data: dataType,
-        callback: undefined | ((err ?: undefined | ErrorTypes) => void) = undefined
+        callback: undefined | ((err ?: errorType) => void) = undefined
     ): Promise<void> | void {
         const messageId = ++this.id;
-        this.replyAwaitMap.set(messageId, false);
         const message = <Message> {
             id: messageId,
             name: this.name,
@@ -153,18 +159,25 @@ export class NodeClusterCache {
 
     setStream(
         key: string,
-        data: streamType,
-        callback: undefined | ((err ?: undefined | ErrorTypes) => void) = undefined
+        stream: streamType,
+        callback: undefined | ((err ?: errorType) => void) = undefined
     ): Promise<void> | void {
-
+        const messageId = ++this.id;
+        const message = <Message> {
+            id: messageId,
+            name: this.name,
+            op: 'set',
+            mode: 'stream',
+            key,
+            stream
+        };
     }
 
     get(
         key: string,
-        callback: undefined | ((err: undefined | ErrorTypes, data: dataType) => void) = undefined
+        callback: undefined | ((err: errorType, data: dataType) => void) = undefined
     ): Promise<dataType> | void {
         const messageId = ++this.id;
-        this.replyAwaitMap.set(messageId, false);
         const message = <Message> {
             id: messageId,
             name: this.name,
@@ -258,8 +271,8 @@ export class NodeClusterCache {
             error: this.wrapError(errorCode, message, errorString)
         }
     }
-    wrapError(errorCode: ErrorEnum, message?: Message, errorString?: string): ErrorTypes {
-        return <ErrorTypes> {
+    wrapError(errorCode: ErrorEnum, message?: Message, errorString?: string): Error {
+        return <Error> {
             error: ErrorEnum[errorCode],
             errNo: errorCode,
             message,
